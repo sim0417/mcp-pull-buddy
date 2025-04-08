@@ -274,7 +274,248 @@ const initServer = async () => {
     };
   });
 
-  server.tool("hello world", { message: z.string() }, async ({ message }) => {
+  // PR 리뷰 시간 예측 도구 - AI 위임 방식
+  server.prompt(
+    "estimate-review-time",
+    "PR 정보를 분석하여 리뷰 시간을 예측합니다",
+    {
+      prUrl: z.string().describe("GitHub PR 링크를 입력하세요"),
+    },
+    async (inputs) => {
+      const prUrl = inputs.prUrl;
+
+      if (!prUrl) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "PR URL을 제공해주세요.",
+              },
+            },
+          ],
+        };
+      }
+
+      const prParams = parsePullRequestUrl(prUrl);
+      if (!prParams) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "유효하지 않은 PR URL입니다. GitHub PR 링크 형식이어야 합니다.",
+              },
+            },
+          ],
+        };
+      }
+
+      const prDetails = await getPullRequestDetails(prParams);
+      if (!prDetails) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "PR 상세 정보를 가져오는데 실패했습니다.",
+              },
+            },
+          ],
+        };
+      }
+
+      // PR 정보 전달
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `다음 PR의 리뷰에 필요한 시간을 예측해주세요:
+                PR 제목: ${prDetails.pr.title}
+                변경된 파일 수: ${prDetails.pr.changed_files || 0}
+                추가된 라인: ${prDetails.pr.additions || 0}
+                삭제된 라인: ${prDetails.pr.deletions || 0}
+                리뷰어 수: ${prDetails.reviewers.length}
+                PR 설명: ${prDetails.pr.body || "설명 없음"}`,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  // PR 품질 분석 도구 - AI 위임 방식
+  server.prompt(
+    "analyze-pr-quality",
+    "PR 정보를 분석하여 품질을 평가합니다",
+    {
+      prUrl: z.string().describe("GitHub PR 링크를 입력하세요"),
+    },
+    async (inputs) => {
+      const prUrl = inputs.prUrl;
+
+      if (!prUrl) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "PR URL을 제공해주세요.",
+              },
+            },
+          ],
+        };
+      }
+
+      const prParams = parsePullRequestUrl(prUrl);
+      if (!prParams) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "유효하지 않은 PR URL입니다. GitHub PR 링크 형식이어야 합니다.",
+              },
+            },
+          ],
+        };
+      }
+
+      const prDetails = await getPullRequestDetails(prParams);
+      if (!prDetails) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "PR 상세 정보를 가져오는데 실패했습니다.",
+              },
+            },
+          ],
+        };
+      }
+
+      // PR 정보 전달
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `다음 PR의 품질을 분석하고 개선 사항을 제안해주세요:
+                PR 제목: ${prDetails.pr.title}
+                변경된 파일 수: ${prDetails.pr.changed_files || 0}
+                추가된 라인: ${prDetails.pr.additions || 0}
+                삭제된 라인: ${prDetails.pr.deletions || 0}
+                리뷰어 수: ${prDetails.reviewers.length}
+                PR 설명: ${prDetails.pr.body || "설명 없음"}
+
+                다음 항목에 대해 평가하고 점수(100점 만점)와 등급(A-F)을 매겨주세요:
+                1. PR 설명 품질
+                2. PR 크기의 적절성
+                3. 리뷰어 지정 상태
+                4. 전체적인 품질`,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  // PR 설명 개선 프롬프트 - AI 위임 방식
+  server.prompt(
+    "improve-pr-description",
+    "PR 설명을 개선하기 위한 프롬프트",
+    {
+      prUrl: z.string().describe("GitHub PR 링크를 입력하세요"),
+    },
+    async (inputs) => {
+      const prUrl = inputs.prUrl;
+
+      if (!prUrl) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "PR URL을 제공해주세요.",
+              },
+            },
+          ],
+        };
+      }
+
+      const prParams = parsePullRequestUrl(prUrl);
+      if (!prParams) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "유효하지 않은 PR URL입니다. GitHub PR 링크 형식이어야 합니다.",
+              },
+            },
+          ],
+        };
+      }
+
+      const prDetails = await getPullRequestDetails(prParams);
+      if (!prDetails) {
+        return {
+          messages: [
+            {
+              role: "assistant",
+              content: {
+                type: "text",
+                text: "PR 상세 정보를 가져오는데 실패했습니다.",
+              },
+            },
+          ],
+        };
+      }
+
+      const currentDescription = prDetails.pr.body || "";
+
+      // PR 정보 전달
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `다음 PR 설명을 개선해주세요:
+                현재 PR 설명:
+                ${currentDescription}
+
+                PR 제목: ${prDetails.pr.title}
+                변경된 파일 수: ${prDetails.pr.changed_files || 0}
+                추가된 라인: ${prDetails.pr.additions || 0}
+                삭제된 라인: ${prDetails.pr.deletions || 0}
+
+                다음 섹션을 포함한 잘 구조화된 PR 설명을 작성해주세요:
+                1. 변경 사항 요약
+                2. 관련 이슈
+                3. 테스트 방법
+                4. 스크린샷/데모 (필요한 경우)
+                5. 추가 고려사항 (성능 영향, 보안 고려사항, DB 마이그레이션 등)`,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  server.tool("hello-world", { message: z.string() }, async ({ message }) => {
     return {
       content: [
         {
