@@ -32,6 +32,15 @@ const runTest = async () => {
     });
 
     console.log("call hello world tool result:", result);
+
+    const findPrBuddyResult = await client.callTool({
+      name: "find-pr-buddy",
+      arguments: {
+        prUrl: "https://github.com/day1co/cornerstone-tasks/pull/1065",
+      },
+    });
+
+    console.log("call find-pr-buddy tool result:", findPrBuddyResult);
   } catch (error) {
     console.error("Error:", error);
   } finally {

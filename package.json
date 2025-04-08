@@ -3,11 +3,12 @@
 	"version": "1.0.0",
 	"description": "Your friendly PR reviewer recommender & contribution notifier for GitHub and Slack. Powered by MCP.",
 	"main": "index.js",
+	"type": "module",
 	"scripts": {
 		"build": "tsc",
-		"dev": "ts-node src/index.ts",
-		"test": "ts-node src/test-client.ts",
-		"inspector": "npx @modelcontextprotocol/inspector ts-node src/index.ts"
+		"dev": "tsx src/index.ts",
+		"test": "tsx src/test-client.ts",
+		"inspector": "npx @modelcontextprotocol/inspector tsx src/index.ts"
 	},
 	"author": "hugo.sim",
 	"license": "MIT",
@@ -22,7 +23,7 @@
 	"devDependencies": {
 		"@types/express": "^5.0.1",
 		"@types/node": "^22.14.0",
-		"ts-node": "^10.9.2",
+		"tsx": "^4.19.3",
 		"typescript": "^5.8.3"
 	}
 }
