@@ -1,4 +1,6 @@
 import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
+// Node.js 18 이상에서는 기본 제공되지만, 하위 버전 호환을 위해 추가
+import fetch from "node-fetch";
 import { CacheStore } from "./cache.js";
 
 export type PullRequests =
@@ -103,6 +105,9 @@ const getOctokit = (): Octokit => {
   }
   return new Octokit({
     auth: token,
+    request: {
+      fetch: fetch,
+    },
   });
 };
 
